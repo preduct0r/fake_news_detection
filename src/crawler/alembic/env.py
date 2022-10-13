@@ -16,7 +16,7 @@ dirname = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(dirname, "../../../.."))
 # add your model's MetaData object here
 # for 'autogenerate' support
-from fake_news_detection.src.crawler.crawler.db_schema import Base
+from fake_news_detection.src.crawler.db.db_schema import Base
 target_metadata = Base.metadata
 from fake_news_detection.src.crawler.crawler.utils import get_db_url
 # other values from the config, defined by the needs of env.py,

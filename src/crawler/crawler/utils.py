@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from typing import Any, Dict
 from dotenv import dotenv_values
 def get_conf(
-        path = '/Users/yegor/PycharmProjects/crawler/crawler/crawler/conf.yml')->Dict:
+        path = './src/crawler/crawler/conf.yml')->Dict:
     '''
     Get configs from conf file
     :param path: path to conf file
@@ -14,7 +14,11 @@ def get_conf(
     return my_dict
 
 def get_db_url():
-    config_dict = dotenv_values('./crawler/database.env')
+    '''
+    create configs dict from database data
+    :return: dict with configs of databse
+    '''
+    config_dict = dotenv_values('./src/crawler/db/database.env')
     print(config_dict)
     return "postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}".format(**config_dict)
 

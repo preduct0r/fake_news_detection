@@ -2,11 +2,11 @@ import requests as r
 import pandas as pd
 from typing import Dict, List
 import xmltodict
-from fake_news_detection.src.crawler import News_Feed
+from src.crawler.db.db_schema import News_Feed
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from fake_news_detection.src.crawler import get_db_url
-from fake_news_detection.src.crawler import get_conf
+from src.crawler.crawler.utils import get_db_url
+from src.crawler.crawler.utils import get_conf
 
 
 
@@ -38,23 +38,14 @@ class Crawler:
         some_engine = create_engine(get_db_url())
         Session = sessionmaker(bind=some_engine)
         session = Session()
-        # inst = inspect(News_Feed)
-        objects = []
         for index, row in self.df.iterrows():
-            objects.append(News_Feed(id = row.guid,
+            object = News_Feed(id = row.guid,
                                 title = row.title,
                                 source = row.source,
                                 description = row.description,
-                                PubDate = row.pubDate))
-        session.bulk_save_objects(objects)
+                                PubDate = row.pubDate)
+            session.merge(object)
         session.commit()
-        # session.execute(table_addresses.insert().values(name='Joe', age=20))
-        # attr_names = [c_attr.key for c_attr in inst.mapper.column_attrs]
-        # cursor = conn.cursor()
-        # cursor.execute("INSERT INTO news_feedNews () VALUES(%s, %s, %s)", (v1, v2, v3))
-        # conn.commit()  # <- We MUST commit to reflect the inserted data
-        # cursor.close()
-        # conn.close()
 
 def main():
     rss_list = get_conf()
