@@ -1,0 +1,6 @@
+---
+rss_list:
+  - name: lenta
+    url: https://lenta.ru/rss
+  - name: meduza
+    url: https://meduza.io/rss2/all
