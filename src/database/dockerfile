@@ -1,0 +1,8 @@
+FROM postgres:latest
+ENV POSTGRES_HOST='0.0.0.0'
+ENV POSTGRES_PORT=5432
+ENV POSTGRES_USER=root
+ENV POSTGRES_PASSWORD=password
+ENV POSTGRES_DB=rss_news_feed
+RUN docker-entrypoint.sh
+COPY create_table.sql /docker-entrypoint-initdb.d/create_table.sql
