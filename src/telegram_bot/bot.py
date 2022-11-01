@@ -43,13 +43,13 @@ parser.add_argument(
     "--telegram_token",
     type=str,
     default="5629691617:AAHPrWQv7y8ZkYMnr6lc8JTh7GyXiprBXk4",
-    help="фронт в виде бота @fake_news_course_bot",
+    help="фронт в виде бота @fake_news_course_bot"
 )
 parser.add_argument(
     "--error_token",
     type=str,
     default="1727154835:AAFpb9ZFwD0SAaUyyZ-wmDEVkKSoF4rqXVI",
-    help="Пытался выводить логи в другого бота, но нет",
+    help="Пытался выводить логи в другого бота, но нет"
 )
 # XXX почему chat_id совпадает для разных ботов одного пользователя?
 parser.add_argument(
@@ -61,13 +61,13 @@ parser.add_argument(
     "--data_path",
     type=str,
     default="data/raw/telegram/@lentadnya_10.csv",
-    help="откуда забирать данные",
+    help="откуда забирать данные"
 )
 parser.add_argument(
     "--repeat_each_xxx_seconds",
-    type=str,
+    type=int,
     default=5,
-    help="частота обновления новостной ленты",
+    help="частота обновления новостной ленты"
 )
 
 args = parser.parse_args()
@@ -118,13 +118,11 @@ def error(update, context):
     # parsed_html = html2text.html2text(message)
     # send_text = 'https://api.telegram.org/bot' + args.error_token + '/sendMessage?chat_id=' + args.error_chat_id + '&parse_mode=Markdown&text=' + parsed_html
     # response = requests.get(send_text)
-
-
+    
 # TODO забираю из датафрейма, а лучше бы в базу сходить
 def get_data_from_source(data_path):
     data = pd.read_csv(data_path)
     return str("\n\n".join(list(data["text"])))
-
 
 if __name__ == "__main__":
     updater = Updater(args.telegram_token, use_context=True)
@@ -132,9 +130,7 @@ if __name__ == "__main__":
     job_queue = dp.job_queue
 
     def repeating_job(context):
-        context.bot.send_message(
-            chat_id=args.chat_id, text=get_data_from_source(args.data_path)
-        )
+        context.bot.send_message(chat_id=args.chat_id, text=get_data_from_source(args.data_path))
 
     job_queue.run_repeating(
         callback=repeating_job,
@@ -142,7 +138,7 @@ if __name__ == "__main__":
         first=0,
     )
 
-    dp.add_handler(CommandHandler("n", repeating_job, pass_job_queue=True))
+    # dp.add_handler(CommandHandler("n", repeating_job, pass_job_queue=True))
 
     # log all errors
     dp.add_error_handler(error)
