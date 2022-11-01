@@ -17,15 +17,15 @@ bot.
 
 
 import datetime
-import requests
 import html
 import json
 import logging
 import traceback
-from bs4 import BeautifulSoup
-import html2text
 
 import configargparse
+import html2text
+import requests
+from bs4 import BeautifulSoup
 from telegram import ParseMode, Update
 from telegram.ext import CommandHandler, Filters, JobQueue, MessageHandler, Updater
 
@@ -48,10 +48,11 @@ parser.add_argument(
     type=str,
     default="1727154835:AAFpb9ZFwD0SAaUyyZ-wmDEVkKSoF4rqXVI",
 )
+# почему то error_chat_id совпадает с chat_id?
 parser.add_argument(
-    "--error_chat_id",
+    "--chat_id",
     type=str,
-    default='406153563',
+    default="406153563",
 )
 
 args = parser.parse_args()
@@ -104,26 +105,21 @@ def error(update, context):
     # response = requests.get(send_text)
 
 
-def repeating_job(update, context):
-    # context.bot.send_message(chat_id=update.effective_chat.id, text='Setting a daily notifications!')
-
-    context.job_queue.run_repeating(
-        callback=notify_assignees, 
-        interval=5, 
-        first=0, 
-        context=update
-    )
-
-
-def notify_assignees(bot, job):
-    bot.send_message(chat_id="5629691617", text="Some text!")
-
-
 if __name__ == "__main__":
     updater = Updater(args.telegram_token, use_context=True)
     dp = updater.dispatcher
+    job_queue = dp.job_queue
 
-    dp.add_handler(CommandHandler("notify", repeating_job, pass_job_queue=True))
+    def repeating_job(context):
+        context.bot.send_message(chat_id=args.chat_id, text="job executed")
+
+    job_queue.run_repeating(
+        callback=repeating_job,
+        interval=5,
+        first=0,
+    )
+
+    dp.add_handler(CommandHandler("n", repeating_job, pass_job_queue=True))
 
     # log all errors
     dp.add_error_handler(error)
