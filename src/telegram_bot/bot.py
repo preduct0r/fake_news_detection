@@ -20,7 +20,7 @@ import datetime
 import logging
 
 import configargparse
-from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
+from telegram.ext import CommandHandler, Filters, MessageHandler, Updater, JobQueue
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -60,24 +60,25 @@ def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
     
+    
+def repeating_job(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text='Setting a daily notifications!')
+    
+    # job_queue.run_repeating(callback = notify_assignees, 
+    #                         interval = 5,
+    #                         first=0,
+    #                         context=update)
 
+def notify_assignees(bot, job):
+    bot.send_message(chat_id="5629691617", text="Some text!")
+    
+    
+    
 if __name__ == '__main__':
-    """Start the bot."""
-    # Create the Updater and pass it your bot's token.
-    # Make sure to set use_context=True to use the new context based callbacks
-    # Post version 12 this will no longer be necessary
-    
     updater = Updater(args.telegram_token, use_context=True)
-    
-    # Get the dispatcher to register handlers
     dp = updater.dispatcher
     
-    # on different commands - answer in Telegram
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", help))
-
-    # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text, echo))
+    dp.add_handler(CommandHandler('notify', repeating_job, pass_job_queue=True))
 
     # log all errors
     dp.add_error_handler(error)
