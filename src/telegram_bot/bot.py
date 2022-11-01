@@ -17,10 +17,13 @@ bot.
 
 
 import datetime
+import requests
 import html
 import json
 import logging
 import traceback
+from bs4 import BeautifulSoup
+import html2text
 
 import configargparse
 from telegram import ParseMode, Update
@@ -39,6 +42,16 @@ parser.add_argument(
     "--telegram_token",
     type=str,
     default="5629691617:AAHPrWQv7y8ZkYMnr6lc8JTh7GyXiprBXk4",
+)
+parser.add_argument(
+    "--error_token",
+    type=str,
+    default="1727154835:AAFpb9ZFwD0SAaUyyZ-wmDEVkKSoF4rqXVI",
+)
+parser.add_argument(
+    "--error_chat_id",
+    type=str,
+    default='406153563',
 )
 
 args = parser.parse_args()
@@ -85,6 +98,10 @@ def error(update, context):
     context.bot.send_message(
         chat_id=update.effective_chat.id, text=message, parse_mode=ParseMode.HTML
     )
+    # parsed_html = BeautifulSoup(message)
+    # parsed_html = html2text.html2text(message)
+    # send_text = 'https://api.telegram.org/bot' + args.error_token + '/sendMessage?chat_id=' + args.error_chat_id + '&parse_mode=Markdown&text=' + parsed_html
+    # response = requests.get(send_text)
 
 
 def repeating_job(update, context):
