@@ -24,6 +24,7 @@ import traceback
 
 import configargparse
 import html2text
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from telegram import ParseMode, Update
@@ -42,17 +43,31 @@ parser.add_argument(
     "--telegram_token",
     type=str,
     default="5629691617:AAHPrWQv7y8ZkYMnr6lc8JTh7GyXiprBXk4",
+    help="фронт в виде бота @fake_news_course_bot",
 )
 parser.add_argument(
     "--error_token",
     type=str,
     default="1727154835:AAFpb9ZFwD0SAaUyyZ-wmDEVkKSoF4rqXVI",
+    help="Пытался выводить логи в другого бота, но нет",
 )
-# почему то error_chat_id совпадает с chat_id?
+# XXX почему chat_id совпадает для разных ботов одного пользователя?
 parser.add_argument(
     "--chat_id",
     type=str,
     default="406153563",
+)
+parser.add_argument(
+    "--data_path",
+    type=str,
+    default="data/raw/telegram/@lentadnya_10.csv",
+    help="откуда забирать данные",
+)
+parser.add_argument(
+    "--repeat_each_xxx_seconds",
+    type=str,
+    default=5,
+    help="частота обновления новостной ленты",
 )
 
 args = parser.parse_args()
@@ -105,17 +120,25 @@ def error(update, context):
     # response = requests.get(send_text)
 
 
+# TODO забираю из датафрейма, а лучше бы в базу сходить
+def get_data_from_source(data_path):
+    data = pd.read_csv(data_path)
+    return str("\n\n".join(list(data["text"])))
+
+
 if __name__ == "__main__":
     updater = Updater(args.telegram_token, use_context=True)
     dp = updater.dispatcher
     job_queue = dp.job_queue
 
     def repeating_job(context):
-        context.bot.send_message(chat_id=args.chat_id, text="job executed")
+        context.bot.send_message(
+            chat_id=args.chat_id, text=get_data_from_source(args.data_path)
+        )
 
     job_queue.run_repeating(
         callback=repeating_job,
-        interval=5,
+        interval=args.repeat_each_xxx_seconds,
         first=0,
     )
 
