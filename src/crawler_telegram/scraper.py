@@ -1,4 +1,5 @@
 import os
+import configargparse
 
 import pandas as pd
 import telethon
@@ -6,7 +7,36 @@ import telethon.sync
 import tqdm
 import yaml
 
-with open("src/crawler_telegram/telegram_config.yaml") as f:
+parser = configargparse.ArgParser()
+
+parser.add_argument(
+    "--config_path",
+    type=str,
+    default="src/crawler_telegram/telegram_config.yaml",
+    help="credentials для telegram api"
+)
+parser.add_argument(
+    "--data_dir",
+    type=str,
+    default="data/raw/telegram",
+    help="куда сгружаем данные (временная заглушка)"
+)
+parser.add_argument(
+    "--channels_path",
+    type=str,
+    default="src/crawler_telegram/channels.csv",
+    help="каналы для парсинга"
+)
+parser.add_argument(
+    "--total_posts_limit",
+    type=int,
+    default=10,
+    help="сколько новостей выгрузить с каждого канала"
+)
+
+args = parser.parse_args()
+
+with open(args.config_path) as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
     api_id = config["api_id"]
     api_hash = config["api_hash"]
@@ -15,11 +45,8 @@ with open("src/crawler_telegram/telegram_config.yaml") as f:
 client = telethon.sync.TelegramClient(username, api_id, api_hash)
 client.start()
 
-total_posts_limit = 10
 limit = 1  
-data_path = "data/raw/telegram"
-
-channels = pd.read_csv("src/crawler_telegram/channels.csv", header=None).iloc[:, 0].to_list()
+channels = pd.read_csv(args.channels_path, header=None).iloc[:, 0].to_list()
 channels = set(channels)
 
 
@@ -29,9 +56,9 @@ for i, channel in enumerate(channels):
     offset_post = 0
     num_ready_posts = 0
     df_messages, df_dates = [], []
-    bar = tqdm.tqdm(total=total_posts_limit)
+    bar = tqdm.tqdm(total=args.total_posts_limit)
     while (
-        total_posts_limit and num_ready_posts < total_posts_limit
+        args.total_posts_limit and num_ready_posts < args.total_posts_limit
     ):
         try:
             history = client(
@@ -67,6 +94,6 @@ for i, channel in enumerate(channels):
     df = pd.DataFrame(columns=["text", "date"])
     df["text"] = df_messages
     df["date"] = df_dates
-    df.to_csv(os.path.join(data_path, channel + f"_{num_ready_posts}.csv"), index=False)
+    df.to_csv(os.path.join(args.data_dir, channel + f"_{num_ready_posts}.csv"), index=False)
 
      
